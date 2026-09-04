@@ -31,6 +31,11 @@ export default function Scoreboard() {
   const fetchScoreboard = async () => {
     try {
       const res = await fetch('/api/scoreboard')
+      if (!res.ok) {
+        setError(`Failed to load scoreboard (${res.status})`)
+        setLoading(false)
+        return
+      }
       const data = await res.json()
       setScoreboard(data)
     } catch (err) {
