@@ -112,3 +112,4 @@ For issues, check:
 - Test with a few players before season starts
 - Add NFL games to database via admin panel (or they auto-import via ESPN API)
 - Share scoreboard URL with players
+
