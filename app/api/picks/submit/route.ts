@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     // Get game info to check deadline
     const { data: game } = await supabaseServer
       .from('games')
-      .select('start_timestamp')
+      .select('start_timestamp, start_time')
       .eq('week', week)
       .limit(1)
       .single()
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     // Send confirmation email
     if (process.env.RESEND_API_KEY) {
       try {
-        const gameTime = game ? new Date(game.start_timestamp).toLocaleString() : 'TBD'
+        const gameTime = game?.start_time ? game.start_time.replace('T', ' ').split('+')[0] : 'TBD'
         console.log('Sending email to:', player_email)
         const result = await resend.emails.send({
           from: 'onboarding@resend.dev',
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
               <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <p><strong>Team:</strong> ${team_picked}</p>
                 <p><strong>Week:</strong> ${week}</p>
-                <p><strong>Game Time:</strong> ${gameTime}</p>
+                <p><strong>Game Time (UTC):</strong> ${gameTime}</p>
               </div>
               <p>You can change your pick anytime before the game starts.</p>
               <p>Good luck!</p>
