@@ -20,11 +20,23 @@ interface Player {
   picks: Pick[]
 }
 
+interface PendingPick {
+  id: string
+  week: number
+  team_picked: string
+  players: {
+    id: string
+    name: string
+    email: string
+  }
+}
+
 interface Scoreboard {
   week: number
   survivors: Player[]
   eliminated: Player[]
   pool_total: number
+  pending_picks: PendingPick[]
 }
 
 export default function Scoreboard() {
@@ -65,6 +77,33 @@ export default function Scoreboard() {
         <div className="grid grid-cols-2 gap-4 text-gray-600">
           <p><strong>Week:</strong> {scoreboard.week}</p>
           <p><strong>Pool Total:</strong> ${scoreboard.pool_total}</p>
+        </div>
+      </div>
+
+      {/* Current Week Pending Picks */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-blue-50 border-b border-blue-200 px-6 py-4">
+          <h2 className="text-xl font-bold text-blue-900">
+            Week {scoreboard.week} - Pending Picks ({scoreboard.pending_picks.length})
+          </h2>
+        </div>
+        <div className="divide-y">
+          {scoreboard.pending_picks.length === 0 ? (
+            <p className="px-6 py-4 text-gray-500">No picks submitted yet</p>
+          ) : (
+            scoreboard.pending_picks.map((pick) => (
+              <div key={pick.id} className="px-6 py-3 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">{pick.players.name}</p>
+                  <p className="text-sm text-gray-600">{pick.players.email}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-blue-600">{pick.team_picked}</p>
+                  <p className="text-xs text-gray-500">Picked ✓</p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

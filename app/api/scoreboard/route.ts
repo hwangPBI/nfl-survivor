@@ -37,12 +37,20 @@ export async function GET(req: NextRequest) {
 
     const poolTotal = (allPlayers || []).reduce((sum: number, p: any) => sum + (p.total_paid || 0), 0)
 
+    // Get current week pending picks
+    const { data: pendingPicks } = await supabaseServer
+      .from('picks')
+      .select('*, players(id, name, email)')
+      .eq('week', currentWeek)
+      .eq('result', 'pending')
+
     return NextResponse.json(
       {
         week: currentWeek,
         survivors: survivors || [],
         eliminated: eliminated || [],
         pool_total: poolTotal,
+        pending_picks: pendingPicks || [],
       },
       { status: 200 }
     )
