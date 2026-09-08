@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         status: 'alive',
         current_week: 1,
         buyback_count: 0,
-        total_paid: 0,
+        total_paid: 10,
       })
       .select()
 
