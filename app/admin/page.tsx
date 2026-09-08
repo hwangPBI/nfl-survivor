@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface AdminData {
   current_week: number
@@ -235,6 +236,18 @@ export default function AdminDashboard() {
               {syncing ? 'Syncing...' : 'Sync Scores'}
             </button>
           </div>
+
+          <Link href="/admin/buyback">
+            <div className="bg-green-50 border border-green-200 p-6 rounded cursor-pointer hover:bg-green-100 transition">
+              <h2 className="text-lg font-bold text-green-900 mb-4">Manage Buybacks</h2>
+              <p className="text-sm text-green-800 mb-4">
+                View players eligible for buyback and approve their re-entry after payment.
+              </p>
+              <button className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                Go to Buyback Management →
+              </button>
+            </div>
+          </Link>
         </div>
       </div>
     </div>
