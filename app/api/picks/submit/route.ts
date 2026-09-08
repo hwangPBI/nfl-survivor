@@ -83,29 +83,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Send confirmation email
-    try {
-      const gameTime = game ? new Date(game.start_timestamp).toLocaleString() : 'TBD'
-      await resend.emails.send({
-        from: 'noreply@nflsurviver.com',
-        to: player_email,
-        subject: `NFL Survivor - Week ${week} Pick Confirmed`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Pick Confirmed! 🏈</h2>
-            <p>Your pick for Week ${week} has been recorded:</p>
-            <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p><strong>Team:</strong> ${team_picked}</p>
-              <p><strong>Week:</strong> ${week}</p>
-              <p><strong>Game Time:</strong> ${gameTime}</p>
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const gameTime = game ? new Date(game.start_timestamp).toLocaleString() : 'TBD'
+        console.log('Sending email to:', player_email)
+        const result = await resend.emails.send({
+          from: 'onboarding@resend.dev',
+          to: player_email,
+          subject: `NFL Survivor - Week ${week} Pick Confirmed`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Pick Confirmed! 🏈</h2>
+              <p>Your pick for Week ${week} has been recorded:</p>
+              <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Team:</strong> ${team_picked}</p>
+                <p><strong>Week:</strong> ${week}</p>
+                <p><strong>Game Time:</strong> ${gameTime}</p>
+              </div>
+              <p>You can change your pick anytime before the game starts.</p>
+              <p>Good luck!</p>
             </div>
-            <p>You can change your pick anytime before the game starts.</p>
-            <p>Good luck!</p>
-          </div>
-        `,
-      })
-    } catch (emailError) {
-      console.error('Email send error:', emailError)
-      // Don't fail the pick if email fails
+          `,
+        })
+        console.log('Email sent successfully:', result)
+      } catch (emailError) {
+        console.error('Email send error:', emailError)
+        // Don't fail the pick if email fails
+      }
+    } else {
+      console.log('RESEND_API_KEY not set, skipping email')
     }
 
     return NextResponse.json(
