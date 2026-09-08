@@ -85,7 +85,28 @@ export async function POST(req: NextRequest) {
     // Send confirmation email
     if (process.env.RESEND_API_KEY) {
       try {
-        const gameTime = game?.start_time ? game.start_time.replace('T', ' ').split('+')[0] : 'TBD'
+        let gameTime = 'TBD'
+        if (game?.start_time) {
+          // Convert ISO timestamp to PT format: "2026-09-13 1:25 PM PT"
+          const date = new Date(game.start_time)
+          const ptFormatter = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'America/Los_Angeles',
+          })
+          const parts = ptFormatter.formatToParts(date)
+          const year = parts.find(p => p.type === 'year')?.value
+          const month = parts.find(p => p.type === 'month')?.value
+          const day = parts.find(p => p.type === 'day')?.value
+          const hour = parts.find(p => p.type === 'hour')?.value
+          const minute = parts.find(p => p.type === 'minute')?.value
+          const period = parts.find(p => p.type === 'dayPeriod')?.value
+          gameTime = `${year}-${month}-${day} ${hour}:${minute} ${period} PT`
+        }
         console.log('Sending email to:', player_email)
         const result = await resend.emails.send({
           from: 'onboarding@resend.dev',
@@ -98,7 +119,7 @@ export async function POST(req: NextRequest) {
               <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <p><strong>Team:</strong> ${team_picked}</p>
                 <p><strong>Week:</strong> ${week}</p>
-                <p><strong>Game Time (UTC):</strong> ${gameTime}</p>
+                <p><strong>Game Time (PT):</strong> ${gameTime}</p>
               </div>
               <p>You can change your pick anytime before the game starts.</p>
               <p>Good luck!</p>

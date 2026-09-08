@@ -14,24 +14,110 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// NFL 2026 Schedule (example - you'll need to update with actual dates)
-// This is a placeholder structure
+// NFL 2026 Schedule - Week 1
 const gamesList = [
-  // Week 1 - Sep 4-7, 2026
+  // Wednesday, September 9, 2026 - 5:20 PM PT (12:20 AM UTC)
+  {
+    week: 1,
+    team1: 'Seattle Seahawks',
+    team2: 'New England Patriots',
+    start_time: '2026-09-10T00:20:00Z',
+  },
+  // Thursday, September 10, 2026 - 3:35 PM PT (10:35 PM UTC)
+  {
+    week: 1,
+    team1: 'Los Angeles Rams',
+    team2: 'San Francisco 49ers',
+    start_time: '2026-09-11T02:35:00Z',
+  },
+  // Sunday, September 13, 2026 - 10:00 AM PT (5:00 PM UTC)
+  {
+    week: 1,
+    team1: 'Cincinnati Bengals',
+    team2: 'Tampa Bay Buccaneers',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Detroit Lions',
+    team2: 'New Orleans Saints',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Tennessee Titans',
+    team2: 'New York Giants',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Indianapolis Colts',
+    team2: 'Baltimore Ravens',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Pittsburgh Steelers',
+    team2: 'Atlanta Falcons',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Carolina Panthers',
+    team2: 'Chicago Bears',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Jacksonville Jaguars',
+    team2: 'Cleveland Browns',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Houston Texans',
+    team2: 'Buffalo Bills',
+    start_time: '2026-09-13T17:00:00Z',
+  },
+  // Sunday, September 13, 2026 - 1:25 PM PT (8:25 PM UTC)
+  {
+    week: 1,
+    team1: 'Las Vegas Raiders',
+    team2: 'Miami Dolphins',
+    start_time: '2026-09-14T01:25:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Minnesota Vikings',
+    team2: 'Green Bay Packers',
+    start_time: '2026-09-14T01:25:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Philadelphia Eagles',
+    team2: 'Washington Commanders',
+    start_time: '2026-09-14T01:25:00Z',
+  },
+  {
+    week: 1,
+    team1: 'Los Angeles Chargers',
+    team2: 'Arizona Cardinals',
+    start_time: '2026-09-14T01:25:00Z',
+  },
+  // Sunday, September 13, 2026 - 5:20 PM PT (12:20 AM UTC)
+  {
+    week: 1,
+    team1: 'New York Giants',
+    team2: 'Dallas Cowboys',
+    start_time: '2026-09-14T04:20:00Z',
+  },
+  // Monday, September 14, 2026 - 5:15 PM PT (12:15 AM UTC)
   {
     week: 1,
     team1: 'Kansas City Chiefs',
-    team2: 'Houston Texans',
-    start_time: '2026-09-10T20:20:00Z',
+    team2: 'Denver Broncos',
+    start_time: '2026-09-15T00:15:00Z',
   },
-  {
-    week: 1,
-    team1: 'Dallas Cowboys',
-    team2: 'Green Bay Packers',
-    start_time: '2026-09-12T18:30:00Z',
-  },
-  // Add more games here...
-  // Total: 16 games per week x 18 weeks = 288 games
 ]
 
 async function seedGames() {
@@ -39,8 +125,8 @@ async function seedGames() {
 
   try {
     for (const game of gamesList) {
-      const startTime = new Date(game.start_time)
-      const startTimestamp = startTime.getTime()
+      // start_time is already in ISO 8601 format
+      const startTimestamp = new Date(game.start_time).getTime()
 
       const { data, error } = await supabase
         .from('games')
@@ -56,7 +142,7 @@ async function seedGames() {
       if (error) {
         console.error(`Error adding game ${game.team1} vs ${game.team2}:`, error)
       } else {
-        console.log(`✓ Added: Week ${game.week} - ${game.team1} vs ${game.team2}`)
+        console.log(`✓ Added: Week ${game.week} - ${game.team1} vs ${game.team2} at ${game.start_time}`)
       }
     }
 

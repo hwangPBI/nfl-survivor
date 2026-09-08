@@ -19,6 +19,27 @@ interface PlayerPick {
   team_picked: string | null
 }
 
+function formatTimeToPT(isoTime: string): string {
+  const date = new Date(isoTime)
+  const ptFormatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/Los_Angeles',
+  })
+  const parts = ptFormatter.formatToParts(date)
+  const year = parts.find(p => p.type === 'year')?.value
+  const month = parts.find(p => p.type === 'month')?.value
+  const day = parts.find(p => p.type === 'day')?.value
+  const hour = parts.find(p => p.type === 'hour')?.value
+  const minute = parts.find(p => p.type === 'minute')?.value
+  const period = parts.find(p => p.type === 'dayPeriod')?.value
+  return `${year}-${month}-${day} ${hour}:${minute} ${period} PT`
+}
+
 export default function MakePick() {
   const [games, setGames] = useState<Game[]>([])
   const [playerEmail, setPlayerEmail] = useState('')
@@ -140,7 +161,7 @@ export default function MakePick() {
                       Game {idx + 1}: {game.team1} vs {game.team2}
                     </p>
                     <p className="text-xs text-gray-500 mb-3">
-                      {new Date(game.start_time).toLocaleString()}
+                      {formatTimeToPT(game.start_time)}
                     </p>
                     <div className="flex gap-2">
                       <button
