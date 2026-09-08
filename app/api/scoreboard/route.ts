@@ -11,18 +11,18 @@ export async function GET(req: NextRequest) {
 
     const currentWeek = weekData?.current_week || 1
 
-    // Get survivors
+    // Get survivors with their picks
     const { data: survivors, error: survivorsError } = await supabaseServer
       .from('players')
-      .select('*')
+      .select('*, picks(*)')
       .eq('status', 'alive')
 
     if (survivorsError) throw survivorsError
 
-    // Get eliminated and eligible for buyback
+    // Get eliminated and eligible for buyback with their picks
     const { data: eliminated, error: eliminatedError } = await supabaseServer
       .from('players')
-      .select('*')
+      .select('*, picks(*)')
       .in('status', ['eliminated', 'eligible_for_buyback'])
 
     if (eliminatedError) throw eliminatedError

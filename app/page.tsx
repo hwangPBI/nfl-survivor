@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from 'react'
 
+interface Pick {
+  id: string
+  week: number
+  team_picked: string
+  result: 'pending' | 'win' | 'loss'
+}
+
 interface Player {
   id: string
   name: string
@@ -10,6 +17,7 @@ interface Player {
   current_week: number
   buyback_count: number
   total_paid: number
+  picks: Pick[]
 }
 
 interface Scoreboard {
@@ -73,11 +81,23 @@ export default function Scoreboard() {
               <p className="px-6 py-4 text-gray-500">No survivors yet</p>
             ) : (
               scoreboard.survivors.map((player) => (
-                <div key={player.id} className="px-6 py-4 flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">{player.name}</p>
-                    <p className="text-sm text-gray-500">Week {player.current_week}</p>
-                  </div>
+                <div key={player.id} className="px-6 py-4 border-b last:border-b-0">
+                  <p className="font-semibold">{player.name}</p>
+                  <p className="text-sm text-gray-500 mb-2">Week {player.current_week}</p>
+                  {player.picks && player.picks.length > 0 ? (
+                    <div className="text-sm space-y-1">
+                      {player.picks.map((pick) => (
+                        <div key={pick.id} className="flex gap-2">
+                          <span className="text-gray-600">Week {pick.week}:</span>
+                          <span className="font-medium">{pick.team_picked}</span>
+                          {pick.result === 'win' && <span className="text-green-600">✓</span>}
+                          {pick.result === 'loss' && <span className="text-red-600">✗</span>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400">No picks yet</p>
+                  )}
                 </div>
               ))
             )}
@@ -96,15 +116,27 @@ export default function Scoreboard() {
               <p className="px-6 py-4 text-gray-500">No eliminations yet</p>
             ) : (
               scoreboard.eliminated.map((player) => (
-                <div key={player.id} className="px-6 py-4 flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">{player.name}</p>
-                    <p className="text-sm text-gray-500">
-                      {player.status === 'eligible_for_buyback'
-                        ? `Eligible for buyback (${player.buyback_count + 1} buyback - $${(player.buyback_count + 1) * 10})`
-                        : 'Eliminated'}
-                    </p>
-                  </div>
+                <div key={player.id} className="px-6 py-4 border-b last:border-b-0">
+                  <p className="font-semibold">{player.name}</p>
+                  <p className="text-sm text-gray-500 mb-2">
+                    {player.status === 'eligible_for_buyback'
+                      ? `Eligible for buyback (${player.buyback_count + 1} buyback - $${(player.buyback_count + 1) * 10})`
+                      : 'Eliminated'}
+                  </p>
+                  {player.picks && player.picks.length > 0 ? (
+                    <div className="text-sm space-y-1">
+                      {player.picks.map((pick) => (
+                        <div key={pick.id} className="flex gap-2">
+                          <span className="text-gray-600">Week {pick.week}:</span>
+                          <span className="font-medium">{pick.team_picked}</span>
+                          {pick.result === 'win' && <span className="text-green-600">✓</span>}
+                          {pick.result === 'loss' && <span className="text-red-600">✗</span>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400">No picks yet</p>
+                  )}
                 </div>
               ))
             )}
