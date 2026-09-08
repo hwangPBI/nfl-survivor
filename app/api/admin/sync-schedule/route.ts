@@ -4,21 +4,55 @@ import axios from 'axios'
 
 async function fetchNFLSchedule(week: number, year: number = 2026) {
   try {
-    // Try fetching from ESPN schedule API
-    const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/schedule?week=${week}&year=${year}`
-    console.log(`Fetching from: ${url}`)
+    // Try multiple API sources
 
-    const response = await axios.get(url, { timeout: 10000 })
+    // Option 1: Try TheSportsDB
+    console.log(`Attempting to fetch from TheSportsDB for week ${week}, year ${year}`)
+    try {
+      const sportsdbUrl = `https://www.thesportsdb.com/api/v1/eventslast.php?id=133602`
+      const sportsdbResponse = await axios.get(sportsdbUrl, { timeout: 10000 })
 
-    const events = response.data.events || []
+      if (sportsdbResponse.data.results) {
+        const games: any[] = []
+        sportsdbResponse.data.results.forEach((event: any) => {
+          // Parse TheSportsDB format
+          const eventWeek = parseInt(event.intRound) || 0
+          if (eventWeek === week) {
+            const team1 = event.strHomeTeam || ''
+            const team2 = event.strAwayTeam || ''
+            const startTime = event.dateEvent || new Date().toISOString()
+
+            if (team1 && team2) {
+              games.push({
+                week,
+                team1: team2, // Away team
+                team2: team1, // Home team
+                start_time: startTime,
+                start_timestamp: new Date(startTime).getTime(),
+              })
+              console.log(`✓ Added from TheSportsDB: ${team2} vs ${team1}`)
+            }
+          }
+        })
+
+        if (games.length > 0) {
+          console.log(`Successfully fetched ${games.length} games from TheSportsDB`)
+          return games
+        }
+      }
+    } catch (e) {
+      console.log('TheSportsDB fetch failed, trying alternative...')
+    }
+
+    // Option 2: Try ESPN as fallback
+    console.log(`Attempting ESPN API as fallback...`)
+    const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/schedule?week=${week}&year=${year}`
+    const espnResponse = await axios.get(espnUrl, { timeout: 10000 })
+
+    const events = espnResponse.data.events || []
     const games: any[] = []
 
     console.log(`ESPN returned ${events.length} events for week ${week}`)
-    console.log('Response data keys:', Object.keys(response.data))
-
-    if (events.length === 0) {
-      console.log('No events found. Full response:', JSON.stringify(response.data).substring(0, 500))
-    }
 
     events.forEach((event: any) => {
       try {
@@ -34,20 +68,22 @@ async function fetchNFLSchedule(week: number, year: number = 2026) {
             start_time: startTime,
             start_timestamp: new Date(startTime).getTime(),
           })
-          console.log(`✓ Added: ${away} vs ${home}`)
+          console.log(`✓ Added from ESPN: ${away} vs ${home}`)
         }
       } catch (e) {
-        console.error('Error parsing event:', e)
+        console.error('Error parsing ESPN event:', e)
       }
     })
 
-    console.log(`Successfully parsed ${games.length} games for week ${week}`)
+    if (games.length > 0) {
+      console.log(`Successfully fetched ${games.length} games from ESPN`)
+    }
+
     return games
   } catch (error: any) {
-    console.error('Error fetching schedule:', error.message)
+    console.error('Error fetching schedule from all sources:', error.message)
     if (error.response) {
       console.error('Response status:', error.response.status)
-      console.error('Response data:', error.response.data)
     }
     return []
   }
