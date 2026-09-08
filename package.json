@@ -9,19 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.43.4",
+    "autoprefixer": "^10.4.17",
+    "axios": "^1.6.8",
+    "dotenv": "^17.4.2",
+    "next": "^14.2.3",
+    "postcss": "^8.4.32",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "next": "^14.2.3",
-    "@supabase/supabase-js": "^2.43.4",
-    "axios": "^1.6.8",
-    "tailwindcss": "^3.4.1",
-    "autoprefixer": "^10.4.17",
-    "postcss": "^8.4.32"
+    "resend": "^6.26.0",
+    "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
     "@types/node": "^20.10.6",
     "@types/react": "^18.2.45",
-    "@types/react-dom": "^18.2.18"
+    "@types/react-dom": "^18.2.18",
+    "typescript": "^5.3.3"
   }
 }
