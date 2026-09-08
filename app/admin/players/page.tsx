@@ -35,6 +35,10 @@ export default function PlayersStatus() {
   const [error, setError] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [filter, setFilter] = useState<'all' | 'picked' | 'not-picked' | 'alive' | 'eliminated'>('all')
+  const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null)
+  const [editAmount, setEditAmount] = useState('')
+  const [editPassword, setEditPassword] = useState('')
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('admin_authenticated')
@@ -61,6 +65,46 @@ export default function PlayersStatus() {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleUpdatePlayer = async (playerId: number, playerName: string) => {
+    if (!editAmount || !editPassword) {
+      setError('Please enter amount and password')
+      return
+    }
+
+    setUpdating(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/admin/update-player', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          admin_password: editPassword,
+          player_id: playerId,
+          total_paid: parseInt(editAmount),
+        }),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        setError(result.error || 'Failed to update player')
+        return
+      }
+
+      setError('')
+      setEditingPlayerId(null)
+      setEditAmount('')
+      setEditPassword('')
+      fetchPlayersStatus()
+    } catch (err) {
+      setError('Failed to update player')
+      console.error(err)
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -215,7 +259,15 @@ export default function PlayersStatus() {
                       <span className="font-semibold">{player.buyback_count}</span>
                     </td>
                     <td className="px-4 py-3 border-b text-right">
-                      <span className="font-semibold">${player.total_paid}</span>
+                      <button
+                        onClick={() => {
+                          setEditingPlayerId(player.id)
+                          setEditAmount(player.total_paid.toString())
+                        }}
+                        className="font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        ${player.total_paid}
+                      </button>
                     </td>
                     <td className="px-4 py-3 border-b text-sm">
                       {player.all_picks.slice(0, 3).length === 0 ? (
@@ -254,6 +306,74 @@ export default function PlayersStatus() {
           </table>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editingPlayerId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-6">Edit Player Payment</h2>
+
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Total Paid Amount ($)
+                </label>
+                <input
+                  type="number"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  min="0"
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Password
+                </label>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter admin password"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setEditingPlayerId(null)
+                  setEditAmount('')
+                  setEditPassword('')
+                  setError('')
+                }}
+                className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                disabled={updating}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() =>
+                  handleUpdatePlayer(editingPlayerId, data?.players.find((p) => p.id === editingPlayerId)?.name || '')
+                }
+                disabled={updating}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {updating ? 'Updating...' : 'Update'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <div className="bg-white rounded-lg shadow p-8">
