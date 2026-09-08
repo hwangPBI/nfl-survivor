@@ -4,37 +4,51 @@ import axios from 'axios'
 
 async function fetchNFLSchedule(week: number, year: number = 2026) {
   try {
-    // Fetch from ESPN schedule API
-    const response = await axios.get(
-      `https://site.api.espn.com/apis/site/v2/sports/football/nfl/schedule`
-    )
+    // Try fetching from ESPN schedule API
+    const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/schedule?week=${week}&year=${year}`
+    console.log(`Fetching from: ${url}`)
+
+    const response = await axios.get(url, { timeout: 10000 })
 
     const events = response.data.events || []
     const games: any[] = []
 
+    console.log(`ESPN returned ${events.length} events for week ${week}`)
+    console.log('Response data keys:', Object.keys(response.data))
+
+    if (events.length === 0) {
+      console.log('No events found. Full response:', JSON.stringify(response.data).substring(0, 500))
+    }
+
     events.forEach((event: any) => {
-      // Extract game info
-      const eventWeek = event.week || 0
-      if (eventWeek !== week) return
+      try {
+        const away = event.competitions?.[0]?.competitors?.[0]?.team?.displayName || ''
+        const home = event.competitions?.[0]?.competitors?.[1]?.team?.displayName || ''
+        const startTime = event.date || new Date().toISOString()
 
-      const away = event.competitions[0]?.competitors[0]?.team?.displayName || ''
-      const home = event.competitions[0]?.competitors[1]?.team?.displayName || ''
-      const startTime = event.date || new Date().toISOString()
-
-      if (away && home) {
-        games.push({
-          week,
-          team1: away,
-          team2: home,
-          start_time: startTime,
-          start_timestamp: new Date(startTime).getTime(),
-        })
+        if (away && home) {
+          games.push({
+            week,
+            team1: away,
+            team2: home,
+            start_time: startTime,
+            start_timestamp: new Date(startTime).getTime(),
+          })
+          console.log(`✓ Added: ${away} vs ${home}`)
+        }
+      } catch (e) {
+        console.error('Error parsing event:', e)
       }
     })
 
+    console.log(`Successfully parsed ${games.length} games for week ${week}`)
     return games
-  } catch (error) {
-    console.error('Error fetching schedule:', error)
+  } catch (error: any) {
+    console.error('Error fetching schedule:', error.message)
+    if (error.response) {
+      console.error('Response status:', error.response.status)
+      console.error('Response data:', error.response.data)
+    }
     return []
   }
 }
