@@ -19,8 +19,6 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [syncing, setSyncing] = useState(false)
-  const [syncingSchedule, setSyncingSchedule] = useState(false)
-  const [scheduleWeek, setScheduleWeek] = useState(1)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,34 +79,6 @@ export default function AdminDashboard() {
       console.error(err)
     } finally {
       setSyncing(false)
-    }
-  }
-
-  const handleSyncSchedule = async () => {
-    setSyncingSchedule(true)
-    setError('')
-    setMessage('')
-
-    try {
-      const res = await fetch('/api/admin/sync-schedule', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ week: scheduleWeek }),
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setMessage(data.message)
-        fetchAdminData()
-      } else {
-        setError(data.error || 'Failed to sync schedule')
-      }
-    } catch (err) {
-      setError('Schedule sync failed')
-      console.error(err)
-    } finally {
-      setSyncingSchedule(false)
     }
   }
 
@@ -198,31 +168,6 @@ export default function AdminDashboard() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-blue-50 border border-blue-200 p-6 rounded">
-            <h2 className="text-lg font-bold text-blue-900 mb-4">Sync NFL Schedule</h2>
-            <p className="text-sm text-blue-800 mb-4">
-              Fetch upcoming games for a specific week from ESPN.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                min="1"
-                max="18"
-                value={scheduleWeek}
-                onChange={(e) => setScheduleWeek(parseInt(e.target.value))}
-                className="flex-1 px-3 py-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Week number"
-              />
-              <button
-                onClick={handleSyncSchedule}
-                disabled={syncingSchedule}
-                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-              >
-                {syncingSchedule ? 'Syncing...' : 'Sync Schedule'}
-              </button>
-            </div>
-          </div>
-
           <div className="bg-indigo-50 border border-indigo-200 p-6 rounded">
             <h2 className="text-lg font-bold text-indigo-900 mb-4">Sync NFL Scores</h2>
             <p className="text-sm text-indigo-800 mb-4">
