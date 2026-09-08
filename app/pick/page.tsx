@@ -130,36 +130,44 @@ export default function MakePick() {
             <label className="block text-sm font-medium text-gray-700 mb-4">
               Select Team
             </label>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {weekGames.length === 0 ? (
                 <p className="text-gray-500">No games available</p>
               ) : (
-                weekGames.map((game) => (
-                  <div key={game.id} className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedTeam(game.team1)}
-                      className={`flex-1 px-4 py-3 border-2 rounded text-left transition ${
-                        selectedTeam === game.team1
-                          ? 'bg-blue-50 border-blue-600'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      disabled={allGamesPassed}
-                    >
-                      {game.team1} ({new Date(game.start_time).toLocaleString()})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedTeam(game.team2)}
-                      className={`flex-1 px-4 py-3 border-2 rounded text-right transition ${
-                        selectedTeam === game.team2
-                          ? 'bg-blue-50 border-blue-600'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      disabled={allGamesPassed}
-                    >
-                      {game.team2} ({new Date(game.start_time).toLocaleString()})
-                    </button>
+                weekGames.map((game, idx) => (
+                  <div key={game.id} className="bg-gray-50 p-4 rounded border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-700 mb-3">
+                      Game {idx + 1}: {game.team1} vs {game.team2}
+                    </p>
+                    <p className="text-xs text-gray-500 mb-3">
+                      {new Date(game.start_time).toLocaleString()}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTeam(game.team1)}
+                        className={`flex-1 px-4 py-2 border-2 rounded text-sm font-medium transition ${
+                          selectedTeam === game.team1
+                            ? 'bg-blue-50 border-blue-600 text-blue-900'
+                            : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                        }`}
+                        disabled={allGamesPassed}
+                      >
+                        {game.team1}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTeam(game.team2)}
+                        className={`flex-1 px-4 py-2 border-2 rounded text-sm font-medium transition ${
+                          selectedTeam === game.team2
+                            ? 'bg-blue-50 border-blue-600 text-blue-900'
+                            : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                        }`}
+                        disabled={allGamesPassed}
+                      >
+                        {game.team2}
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
