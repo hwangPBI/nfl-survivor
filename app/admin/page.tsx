@@ -19,6 +19,16 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [syncing, setSyncing] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('admin_authenticated')
+    if (stored === 'true') {
+      setAuthenticated(true)
+      fetchAdminData()
+    }
+    setIsInitialized(true)
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,6 +44,8 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setAuthenticated(true)
+        localStorage.setItem('admin_authenticated', 'true')
+        sessionStorage.setItem('admin_password', password)
         fetchAdminData()
       } else {
         setError('Invalid password')
@@ -82,6 +94,10 @@ export default function AdminDashboard() {
     }
   }
 
+  if (!isInitialized) {
+    return <div className="text-center py-8">Loading...</div>
+  }
+
   if (!authenticated) {
     return (
       <div className="max-w-md mx-auto">
@@ -127,7 +143,11 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
           <button
-            onClick={() => setAuthenticated(false)}
+            onClick={() => {
+              setAuthenticated(false)
+              localStorage.removeItem('admin_authenticated')
+              sessionStorage.removeItem('admin_password')
+            }}
             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
           >
             Logout

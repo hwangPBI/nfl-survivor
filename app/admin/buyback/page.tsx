@@ -18,9 +18,21 @@ export default function BuybackManagement() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [approving, setApproving] = useState<number | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    fetchEligiblePlayers()
+    const stored = localStorage.getItem('admin_authenticated')
+    if (stored === 'true') {
+      setIsAuthenticated(true)
+      const storedPassword = sessionStorage.getItem('admin_password')
+      if (storedPassword) {
+        setAdminPassword(storedPassword)
+      }
+      fetchEligiblePlayers()
+    } else {
+      setError('Not authenticated. Please login first.')
+      setLoading(false)
+    }
   }, [])
 
   const fetchEligiblePlayers = async () => {
@@ -78,6 +90,20 @@ export default function BuybackManagement() {
   }
 
   if (loading) return <div className="text-center py-8">Loading...</div>
+
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-lg shadow p-8">
+          <h1 className="text-2xl font-bold mb-4 text-red-600">Access Denied</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <a href="/admin" className="text-blue-600 hover:text-blue-700 font-medium">
+            ← Go to Admin Login
+          </a>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
