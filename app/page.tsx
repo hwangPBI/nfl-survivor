@@ -84,19 +84,21 @@ export default function Scoreboard() {
                 <div key={player.id} className="px-6 py-4 border-b last:border-b-0">
                   <p className="font-semibold">{player.name}</p>
                   <p className="text-sm text-gray-500 mb-2">Week {player.current_week}</p>
-                  {player.picks && player.picks.length > 0 ? (
+                  {player.picks && player.picks.filter((p) => p.result !== 'pending').length > 0 ? (
                     <div className="text-sm space-y-1">
-                      {player.picks.map((pick) => (
-                        <div key={pick.id} className="flex gap-2">
-                          <span className="text-gray-600">Week {pick.week}:</span>
-                          <span className="font-medium">{pick.team_picked}</span>
-                          {pick.result === 'win' && <span className="text-green-600">✓</span>}
-                          {pick.result === 'loss' && <span className="text-red-600">✗</span>}
-                        </div>
-                      ))}
+                      {player.picks
+                        .filter((p) => p.result !== 'pending')
+                        .map((pick) => (
+                          <div key={pick.id} className="flex gap-2">
+                            <span className="text-gray-600">Week {pick.week}:</span>
+                            <span className="font-medium">{pick.team_picked}</span>
+                            {pick.result === 'win' && <span className="text-green-600">✓</span>}
+                            {pick.result === 'loss' && <span className="text-red-600">✗</span>}
+                          </div>
+                        ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-400">No picks yet</p>
+                    <p className="text-xs text-gray-400">No completed picks yet</p>
                   )}
                 </div>
               ))
@@ -123,19 +125,21 @@ export default function Scoreboard() {
                       ? `Eligible for buyback (${player.buyback_count + 1} buyback - $${(player.buyback_count + 1) * 10})`
                       : 'Eliminated'}
                   </p>
-                  {player.picks && player.picks.length > 0 ? (
+                  {player.picks && player.picks.filter((p) => p.result !== 'pending').length > 0 ? (
                     <div className="text-sm space-y-1">
-                      {player.picks.map((pick) => (
-                        <div key={pick.id} className="flex gap-2">
-                          <span className="text-gray-600">Week {pick.week}:</span>
-                          <span className="font-medium">{pick.team_picked}</span>
-                          {pick.result === 'win' && <span className="text-green-600">✓</span>}
-                          {pick.result === 'loss' && <span className="text-red-600">✗</span>}
-                        </div>
-                      ))}
+                      {player.picks
+                        .filter((p) => p.result !== 'pending')
+                        .map((pick) => (
+                          <div key={pick.id} className="flex gap-2">
+                            <span className="text-gray-600">Week {pick.week}:</span>
+                            <span className="font-medium">{pick.team_picked}</span>
+                            {pick.result === 'win' && <span className="text-green-600">✓</span>}
+                            {pick.result === 'loss' && <span className="text-red-600">✗</span>}
+                          </div>
+                        ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-400">No picks yet</p>
+                    <p className="text-xs text-gray-400">No completed picks yet</p>
                   )}
                 </div>
               ))
