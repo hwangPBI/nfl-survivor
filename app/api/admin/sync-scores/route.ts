@@ -15,6 +15,12 @@ async function fetchNFLScores(week: number) {
     const scores: any[] = []
 
     events.forEach((event: any) => {
+      // Only process completed games
+      const status = event.competitions[0]?.status?.type || ''
+      if (status !== 'final' && status !== 'completed') {
+        return // Skip games that haven't finished
+      }
+
       const away = event.competitions[0]?.competitors[0]?.team?.displayName || ''
       const home = event.competitions[0]?.competitors[1]?.team?.displayName || ''
       const awayScore = event.competitions[0]?.competitors[0]?.score || 0
