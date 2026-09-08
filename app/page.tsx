@@ -24,6 +24,7 @@ interface PendingPick {
   id: string
   week: number
   team_picked: string
+  created_at: string
   players: {
     id: string
     name: string
@@ -37,6 +38,18 @@ interface Scoreboard {
   eliminated: Player[]
   pool_total: number
   pending_picks: PendingPick[]
+}
+
+function formatPickTime(isoTime: string): string {
+  const date = new Date(isoTime)
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  })
 }
 
 export default function Scoreboard() {
@@ -99,7 +112,7 @@ export default function Scoreboard() {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-blue-600">{pick.team_picked}</p>
-                  <p className="text-xs text-gray-500">Picked ✓</p>
+                  <p className="text-xs text-gray-500">Picked ✓ at {formatPickTime(pick.created_at)}</p>
                 </div>
               </div>
             ))

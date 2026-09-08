@@ -37,12 +37,13 @@ export async function GET(req: NextRequest) {
 
     const poolTotal = (allPlayers || []).reduce((sum: number, p: any) => sum + (p.total_paid || 0), 0)
 
-    // Get current week pending picks
+    // Get current week pending picks with timestamps
     const { data: pendingPicks } = await supabaseServer
       .from('picks')
       .select('*, players(id, name, email)')
       .eq('week', currentWeek)
       .eq('result', 'pending')
+      .order('created_at', { ascending: false })
 
     return NextResponse.json(
       {
