@@ -187,7 +187,19 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Link href="/admin/players">
+            <div className="bg-purple-50 border border-purple-200 p-6 rounded cursor-pointer hover:bg-purple-100 transition">
+              <h2 className="text-lg font-bold text-purple-900 mb-4">Players & Picks</h2>
+              <p className="text-sm text-purple-800 mb-4">
+                View all players, their current week picks, and historical pick data.
+              </p>
+              <button className="px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                View Master List →
+              </button>
+            </div>
+          </Link>
+
           <div className="bg-indigo-50 border border-indigo-200 p-6 rounded">
             <h2 className="text-lg font-bold text-indigo-900 mb-4">Sync NFL Scores</h2>
             <p className="text-sm text-indigo-800 mb-4">
