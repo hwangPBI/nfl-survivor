@@ -158,7 +158,7 @@ export default function MakePick() {
                       }`}
                       disabled={allGamesPassed}
                     >
-                      {game.team2}
+                      {game.team2} ({new Date(game.start_time).toLocaleString()})
                     </button>
                   </div>
                 ))
