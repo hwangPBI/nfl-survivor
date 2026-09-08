@@ -39,6 +39,9 @@ export default function PlayersStatus() {
   const [editAmount, setEditAmount] = useState('')
   const [editPassword, setEditPassword] = useState('')
   const [updating, setUpdating] = useState(false)
+  const [deletingPlayerId, setDeletingPlayerId] = useState<number | null>(null)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('admin_authenticated')
@@ -105,6 +108,44 @@ export default function PlayersStatus() {
       console.error(err)
     } finally {
       setUpdating(false)
+    }
+  }
+
+  const handleDeletePlayer = async (playerId: number) => {
+    if (!deletePassword) {
+      setError('Please enter admin password')
+      return
+    }
+
+    setDeleting(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/admin/delete-player', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          admin_password: deletePassword,
+          player_id: playerId,
+        }),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        setError(result.error || 'Failed to delete player')
+        return
+      }
+
+      setError('')
+      setDeletingPlayerId(null)
+      setDeletePassword('')
+      fetchPlayersStatus()
+    } catch (err) {
+      setError('Failed to delete player')
+      console.error(err)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -258,16 +299,25 @@ export default function PlayersStatus() {
                     <td className="px-4 py-3 border-b text-center">
                       <span className="font-semibold">{player.buyback_count}</span>
                     </td>
-                    <td className="px-4 py-3 border-b text-right">
-                      <button
-                        onClick={() => {
-                          setEditingPlayerId(player.id)
-                          setEditAmount(player.total_paid.toString())
-                        }}
-                        className="font-semibold text-blue-600 hover:text-blue-800 hover:underline"
-                      >
-                        ${player.total_paid}
-                      </button>
+                    <td className="px-4 py-3 border-b">
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingPlayerId(player.id)
+                            setEditAmount(player.total_paid.toString())
+                          }}
+                          className="font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          ${player.total_paid}
+                        </button>
+                        <button
+                          onClick={() => setDeletingPlayerId(player.id)}
+                          className="px-2 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition"
+                          title="Delete player"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-3 border-b text-sm">
                       {player.all_picks.slice(0, 3).length === 0 ? (
@@ -306,6 +356,61 @@ export default function PlayersStatus() {
           </table>
         </div>
       </div>
+
+      {/* Delete Modal */}
+      {deletingPlayerId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4 text-red-600">Delete Player</h2>
+
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded">
+                {error}
+              </div>
+            )}
+
+            <div className="bg-red-50 border border-red-200 rounded p-4 mb-6">
+              <p className="text-sm text-red-800">
+                <strong>Warning:</strong> This will permanently delete the player and all their picks from the pool. This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Password
+              </label>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+                placeholder="Enter admin password to confirm"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setDeletingPlayerId(null)
+                  setDeletePassword('')
+                  setError('')
+                }}
+                className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeletePlayer(deletingPlayerId)}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete Player'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editingPlayerId && (
