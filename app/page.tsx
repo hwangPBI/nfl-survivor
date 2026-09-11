@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react'
 
+// Always fetch fresh player data, never cache
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface Pick {
   id: string
   week: number
