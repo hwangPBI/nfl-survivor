@@ -180,6 +180,33 @@ export default function PlayersStatus() {
 
   if (!data) return <div className="text-center py-8">No data</div>
 
+  const handleExportPlayers = async () => {
+    try {
+      const passwordFromStorage = sessionStorage.getItem('admin_password')
+      if (!passwordFromStorage) {
+        setError('Admin password not found. Please login again.')
+        return
+      }
+
+      const res = await fetch(`/api/admin/export-players?password=${encodeURIComponent(passwordFromStorage)}`)
+
+      if (!res.ok) {
+        setError('Failed to export players')
+        return
+      }
+
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      setError('Failed to export players')
+      console.error(err)
+    }
+  }
+
   const filteredPlayers = data.players.filter((player) => {
     switch (filter) {
       case 'picked':
@@ -220,25 +247,34 @@ export default function PlayersStatus() {
           </div>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {(['all', 'picked', 'not-picked', 'alive', 'eliminated'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded font-medium transition ${
-                filter === f
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {f === 'all' && 'All'}
-              {f === 'picked' && 'Picked'}
-              {f === 'not-picked' && 'Not Picked'}
-              {f === 'alive' && 'Alive'}
-              {f === 'eliminated' && 'Eliminated'}
-            </button>
-          ))}
+        {/* Filter Buttons & Export */}
+        <div className="flex gap-2 mb-6 flex-wrap items-center justify-between">
+          <div className="flex gap-2 flex-wrap">
+            {(['all', 'picked', 'not-picked', 'alive', 'eliminated'] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded font-medium transition ${
+                  filter === f
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {f === 'all' && 'All'}
+                {f === 'picked' && 'Picked'}
+                {f === 'not-picked' && 'Not Picked'}
+                {f === 'alive' && 'Alive'}
+                {f === 'eliminated' && 'Eliminated'}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleExportPlayers}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium whitespace-nowrap"
+            title="Export all players to CSV file"
+          >
+            📥 Export to CSV
+          </button>
         </div>
 
         {/* Players Table */}
