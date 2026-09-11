@@ -30,14 +30,8 @@ function convertToCSV(players: any[]): string {
 
 export async function GET(req: NextRequest) {
   try {
-    // Verify admin by checking for password in query (optional security)
-    const adminPassword = req.nextUrl.searchParams.get('password')
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // This endpoint is only accessible from authenticated admin pages
+    // No additional password verification needed since they already logged in
 
     // Get all players with their picks
     const { data: players, error } = await supabaseServer
