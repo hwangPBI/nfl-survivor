@@ -183,27 +183,41 @@ export default function PlayersStatus() {
   const handleExportPlayers = async () => {
     try {
       const passwordFromStorage = sessionStorage.getItem('admin_password')
+      console.log('Export attempt - password in storage:', !!passwordFromStorage)
+
       if (!passwordFromStorage) {
         setError('Admin password not found. Please login again.')
         return
       }
 
-      const res = await fetch(`/api/admin/export-players?password=${encodeURIComponent(passwordFromStorage)}`)
+      const url = `/api/admin/export-players?password=${encodeURIComponent(passwordFromStorage)}`
+      console.log('Fetching from:', url)
+
+      const res = await fetch(url)
+      console.log('Response status:', res.status)
 
       if (!res.ok) {
-        setError('Failed to export players')
+        const errorText = await res.text()
+        console.error('Error response:', errorText)
+        setError('Failed to export players: ' + res.status)
         return
       }
 
       const blob = await res.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.click()
-      window.URL.revokeObjectURL(url)
+      console.log('Blob size:', blob.size)
+
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = `player-list-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+      console.log('Export successful')
     } catch (err) {
-      setError('Failed to export players')
-      console.error(err)
+      console.error('Export error:', err)
+      setError('Failed to export players: ' + (err as Error).message)
     }
   }
 
