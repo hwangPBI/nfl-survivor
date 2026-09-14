@@ -5,12 +5,23 @@ function convertToCSV(players: any[]): string {
   if (players.length === 0) return ''
 
   // Headers
-  const headers = ['ID', 'Name', 'Email', 'Status', 'Current Week', 'Buyback Count', 'Total Paid', 'Picks Count', 'Created At']
+  const headers = ['ID', 'Name', 'Email', 'Status', 'Current Week', 'Buyback Count', 'Total Paid', 'Picks Count', 'Recent Picks', 'Created At']
   const rows = [headers.join(',')]
 
   // Data rows
   players.forEach((player) => {
     const pickCount = player.picks ? player.picks.length : 0
+
+    // Format recent picks (last 5) with week, team, and result
+    const recentPicks = (player.picks || [])
+      .sort((a: any, b: any) => b.week - a.week)
+      .slice(0, 5)
+      .map((pick: any) => {
+        const result = pick.result === 'pending' ? '⏳' : pick.result === 'win' ? '✓' : '✗'
+        return `W${pick.week}:${pick.team_picked}(${result})`
+      })
+      .join('; ')
+
     const row = [
       player.id,
       `"${player.name}"`,
@@ -20,6 +31,7 @@ function convertToCSV(players: any[]): string {
       player.buyback_count,
       player.total_paid,
       pickCount,
+      `"${recentPicks}"`,
       player.created_at,
     ]
     rows.push(row.join(','))
