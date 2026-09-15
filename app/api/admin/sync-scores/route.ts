@@ -100,11 +100,13 @@ export async function POST(req: NextRequest) {
       const normalizedWinner = normalizeTeamName(score.winner)
       const winner =
         normalizeTeamName(dbTeam1) === normalizedWinner ? dbTeam1 : dbTeam2
+      const loser = winner === dbTeam1 ? dbTeam2 : dbTeam1
 
       matchedScores.push({
         dbTeam1,
         dbTeam2,
         winner,
+        loser,
       })
 
       await supabaseServer
@@ -122,12 +124,14 @@ export async function POST(req: NextRequest) {
       .eq('result', 'pending')
 
     for (const pick of picks || []) {
+      const normalizedPickTeam = normalizeTeamName(pick.team_picked)
       const gameResult = matchedScores.find((s) =>
-        normalizeTeamName(pick.team_picked) === normalizeTeamName(s.winner)
+        normalizedPickTeam === normalizeTeamName(s.winner) ||
+        normalizedPickTeam === normalizeTeamName(s.loser)
       )
 
       if (gameResult) {
-        const won = normalizeTeamName(pick.team_picked) === normalizeTeamName(gameResult.winner)
+        const won = normalizedPickTeam === normalizeTeamName(gameResult.winner)
         const result = won ? 'win' : 'loss'
 
         await supabaseServer
