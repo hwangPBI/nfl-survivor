@@ -94,13 +94,60 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleSeedWeek = async (e: React.FormEvent) => {
+  const handleDeleteWeekGames = async (e: React.FormEvent) => {
     e.preventDefault()
-    const weekInput = (e.target as any).week_input.value
+    const weekInput = (e.target as any).delete_week_input.value
     const weekNum = parseInt(weekInput)
 
     if (!weekNum || weekNum < 1 || weekNum > 17) {
       setError('Enter a week number between 1-17')
+      return
+    }
+
+    if (!confirm(`Delete ALL games for Week ${weekNum}? This cannot be undone.`)) {
+      return
+    }
+
+    setSyncing(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const res = await fetch('/api/admin/delete-week-games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week: weekNum }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage(`✅ ${data.message}`)
+      } else {
+        setError(data.error || 'Failed to delete games')
+      }
+    } catch (err) {
+      setError('Delete failed')
+      console.error(err)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const handleSeedWeek = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const form = e.target as any
+    const weekNum = parseInt(form.week_input.value)
+    const startDate = form.start_date_input.value
+    const endDate = form.end_date_input.value
+
+    if (!weekNum || weekNum < 1 || weekNum > 17) {
+      setError('Enter a week number between 1-17')
+      return
+    }
+
+    if (!startDate || !endDate) {
+      setError('Enter both start and end dates')
       return
     }
 
@@ -112,13 +159,13 @@ export default function AdminDashboard() {
       const res = await fetch('/api/admin/seed-week', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ week: weekNum }),
+        body: JSON.stringify({ week: weekNum, start_date: startDate, end_date: endDate }),
       })
 
       const data = await res.json()
 
       if (res.ok) {
-        setMessage(`✅ ${data.message} (${data.gamesCount} games)`)
+        setMessage(`✅ ${data.message} (${data.gamesCount} games) for ${data.dateRange}`)
       } else {
         setError(data.error || 'Failed to seed week')
       }
@@ -265,7 +312,28 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-bold text-cyan-900 mb-4">Week Management</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-semibold text-cyan-700 mb-2">Seed Week Games</p>
+                <p className="text-xs font-semibold text-cyan-700 mb-2">🗑️ Delete Week Games</p>
+                <form onSubmit={handleDeleteWeekGames} className="space-y-2">
+                  <input
+                    type="number"
+                    name="delete_week_input"
+                    placeholder="Week #"
+                    min="1"
+                    max="17"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <button
+                    type="submit"
+                    disabled={syncing}
+                    className="w-full px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 text-sm"
+                  >
+                    {syncing ? 'Deleting...' : 'Delete Games'}
+                  </button>
+                </form>
+              </div>
+              <div className="border-t border-cyan-200 pt-3">
+                <p className="text-xs font-semibold text-cyan-700 mb-2">📅 Seed Week Games</p>
                 <form onSubmit={handleSeedWeek} className="space-y-2">
                   <input
                     type="number"
@@ -273,6 +341,18 @@ export default function AdminDashboard() {
                     placeholder="Week #"
                     min="1"
                     max="17"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <input
+                    type="date"
+                    name="start_date_input"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <input
+                    type="date"
+                    name="end_date_input"
                     className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     disabled={syncing}
                   />
