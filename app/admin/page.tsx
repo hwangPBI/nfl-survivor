@@ -130,6 +130,43 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleUpdateCurrentWeek = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const weekInput = (e.target as any).current_week_input.value
+    const weekNum = parseInt(weekInput)
+
+    if (!weekNum || weekNum < 1 || weekNum > 17) {
+      setError('Enter a week number between 1-17')
+      return
+    }
+
+    setSyncing(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const res = await fetch('/api/admin/update-current-week', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week: weekNum }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage(`✅ ${data.message}`)
+        fetchAdminData()
+      } else {
+        setError(data.error || 'Failed to update current week')
+      }
+    } catch (err) {
+      setError('Update failed')
+      console.error(err)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   if (!isInitialized) {
     return <div className="text-center py-8">Loading...</div>
   }
@@ -225,28 +262,51 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="bg-cyan-50 border border-cyan-200 p-6 rounded">
-            <h2 className="text-lg font-bold text-cyan-900 mb-4">Seed Week Schedule</h2>
-            <p className="text-sm text-cyan-800 mb-4">
-              Auto-fetch NFL schedule from ESPN and seed games for the week.
-            </p>
-            <form onSubmit={handleSeedWeek} className="space-y-3">
-              <input
-                type="number"
-                name="week_input"
-                placeholder="Week #"
-                min="1"
-                max="17"
-                className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                disabled={syncing}
-              />
-              <button
-                type="submit"
-                disabled={syncing}
-                className="w-full px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 text-sm"
-              >
-                {syncing ? 'Seeding...' : 'Seed Week'}
-              </button>
-            </form>
+            <h2 className="text-lg font-bold text-cyan-900 mb-4">Week Management</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-cyan-700 mb-2">Seed Week Games</p>
+                <form onSubmit={handleSeedWeek} className="space-y-2">
+                  <input
+                    type="number"
+                    name="week_input"
+                    placeholder="Week #"
+                    min="1"
+                    max="17"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <button
+                    type="submit"
+                    disabled={syncing}
+                    className="w-full px-3 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 text-sm"
+                  >
+                    {syncing ? 'Seeding...' : 'Seed Week'}
+                  </button>
+                </form>
+              </div>
+              <div className="border-t border-cyan-200 pt-3">
+                <p className="text-xs font-semibold text-cyan-700 mb-2">Update Current Week</p>
+                <form onSubmit={handleUpdateCurrentWeek} className="space-y-2">
+                  <input
+                    type="number"
+                    name="current_week_input"
+                    placeholder="Week #"
+                    min="1"
+                    max="17"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <button
+                    type="submit"
+                    disabled={syncing}
+                    className="w-full px-3 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 text-sm"
+                  >
+                    {syncing ? 'Updating...' : 'Set Current Week'}
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
 
           <Link href="/admin/players">
