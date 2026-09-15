@@ -15,7 +15,7 @@ function parsePacificTime(dateTimeStr: string): Date {
   // Create initial UTC date from parsed input
   const inputUTC = new Date(`${year}-${month}-${day}T${String(hour24).padStart(2, '0')}:${min}:00Z`)
 
-  // Format this UTC time as it appears in PT timezone
+  // Format this UTC time as it appears in PT timezone using formatToParts
   const ptFormatter = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Los_Angeles',
     year: 'numeric',
@@ -27,11 +27,11 @@ function parsePacificTime(dateTimeStr: string): Date {
     hour12: false,
   })
 
-  const ptFormatted = ptFormatter.format(inputUTC)
-  const ptMatch = ptFormatted.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/)
-  if (!ptMatch) throw new Error('Failed to parse PT time')
+  const ptParts = ptFormatter.formatToParts(inputUTC)
+  const ptHourPart = ptParts.find(p => p.type === 'hour')
+  if (!ptHourPart) throw new Error('Failed to parse PT time')
 
-  const ptHour = parseInt(ptMatch[4])
+  const ptHour = parseInt(ptHourPart.value)
   const userHour = hour24
 
   // Calculate offset: how many hours to add to make the UTC time display correctly in PT
