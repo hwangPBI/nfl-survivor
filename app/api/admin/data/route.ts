@@ -20,10 +20,10 @@ export async function GET(req: NextRequest) {
     const eliminated = (allPlayers || []).filter((p: any) => p.status === 'eliminated').length
     const totalPlayers = allPlayers?.length || 0
 
-    // Get pool total
+    // Get pool total and full player list
     const { data: playerData } = await supabaseServer
       .from('players')
-      .select('total_paid')
+      .select('*')
 
     const poolTotal = (playerData || []).reduce((sum: number, p: any) => sum + (p.total_paid || 0), 0)
 
@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
         survivors,
         eliminated,
         pool_total: poolTotal,
+        players: playerData || [],
       },
       { status: 200 }
     )
