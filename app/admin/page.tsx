@@ -271,6 +271,51 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleSeedFromImage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const form = e.target as any
+    const weekNum = parseInt(form.image_week_input.value)
+    const imageFile = form.image_input.files[0]
+
+    if (!weekNum || weekNum < 1 || weekNum > 17) {
+      setError('Enter a week number between 1-17')
+      return
+    }
+
+    if (!imageFile) {
+      setError('Select an image file')
+      return
+    }
+
+    setSyncing(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const formData = new FormData()
+      formData.append('week', weekNum.toString())
+      formData.append('image', imageFile)
+
+      const res = await fetch('/api/admin/seed-week-from-image', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage(`✅ ${data.message} (${data.gamesCount} games)`)
+      } else {
+        setError(data.error || 'Failed to seed from image')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Image upload failed')
+      console.error(err)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   if (!isInitialized) {
     return <div className="text-center py-8">Loading...</div>
   }
@@ -447,6 +492,34 @@ export default function AdminDashboard() {
                     className="w-full px-3 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 text-sm"
                   >
                     {syncing ? 'Seeding...' : 'Seed Games'}
+                  </button>
+                </form>
+              </div>
+              <div className="border-t border-cyan-200 pt-3">
+                <p className="text-xs font-semibold text-cyan-700 mb-2">📸 Seed from Schedule Image</p>
+                <form onSubmit={handleSeedFromImage} className="space-y-2">
+                  <input
+                    type="number"
+                    name="image_week_input"
+                    placeholder="Week #"
+                    min="1"
+                    max="17"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <input
+                    type="file"
+                    name="image_input"
+                    accept="image/*"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <button
+                    type="submit"
+                    disabled={syncing}
+                    className="w-full px-3 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 text-sm"
+                  >
+                    {syncing ? 'Processing...' : 'Upload & Parse'}
                   </button>
                 </form>
               </div>
