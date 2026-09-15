@@ -436,7 +436,7 @@ export default function AdminDashboard() {
                   />
                   <textarea
                     name="manual_games_input"
-                    placeholder="Team1, Team2, YYYY-MM-DD HH:MM&#10;Detroit, Buffalo, 2026-09-17 17:15&#10;Carolina, Atlanta, 2026-09-20 10:00"
+                    placeholder="Team1, Team2, YYYY-MM-DD HH:MM&#10;Detroit Lions, Buffalo Bills, 2026-09-17 17:15&#10;Carolina Panthers, Atlanta Falcons, 2026-09-20 10:00"
                     className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
                     rows={4}
                     disabled={syncing}
