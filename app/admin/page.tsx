@@ -214,6 +214,63 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleSeedManual = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const form = e.target as any
+    const weekNum = parseInt(form.manual_week_input.value)
+    const gamesText = form.manual_games_input.value
+
+    if (!weekNum || weekNum < 1 || weekNum > 17) {
+      setError('Enter a week number between 1-17')
+      return
+    }
+
+    if (!gamesText.trim()) {
+      setError('Enter at least one game')
+      return
+    }
+
+    setSyncing(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const games = gamesText
+        .split('\n')
+        .filter((line: string) => line.trim())
+        .map((line: string) => {
+          const parts = line.split(',').map((p: string) => p.trim())
+          if (parts.length !== 3) {
+            throw new Error(`Invalid format: "${line}". Use: Team1, Team2, YYYY-MM-DD HH:MM`)
+          }
+          return {
+            team1: parts[0],
+            team2: parts[1],
+            start_time: parts[2],
+          }
+        })
+
+      const res = await fetch('/api/admin/seed-week-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week: weekNum, games }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage(`✅ ${data.message} (${data.gamesCount} games)`)
+      } else {
+        setError(data.error || 'Failed to seed week')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Seed failed')
+      console.error(err)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   if (!isInitialized) {
     return <div className="text-center py-8">Loading...</div>
   }
@@ -362,6 +419,34 @@ export default function AdminDashboard() {
                     className="w-full px-3 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 text-sm"
                   >
                     {syncing ? 'Seeding...' : 'Seed Week'}
+                  </button>
+                </form>
+              </div>
+              <div className="border-t border-cyan-200 pt-3">
+                <p className="text-xs font-semibold text-cyan-700 mb-2">✏️ Manual Seed Games</p>
+                <form onSubmit={handleSeedManual} className="space-y-2">
+                  <input
+                    type="number"
+                    name="manual_week_input"
+                    placeholder="Week #"
+                    min="1"
+                    max="17"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    disabled={syncing}
+                  />
+                  <textarea
+                    name="manual_games_input"
+                    placeholder="Team1, Team2, YYYY-MM-DD HH:MM&#10;Detroit, Buffalo, 2026-09-17 17:15&#10;Carolina, Atlanta, 2026-09-20 10:00"
+                    className="w-full px-3 py-2 border border-cyan-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
+                    rows={4}
+                    disabled={syncing}
+                  />
+                  <button
+                    type="submit"
+                    disabled={syncing}
+                    className="w-full px-3 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 text-sm"
+                  >
+                    {syncing ? 'Seeding...' : 'Seed Games'}
                   </button>
                 </form>
               </div>
