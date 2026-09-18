@@ -26,32 +26,33 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Prepare batch updates
-    const updates = games.map((game: any) => {
+    console.log('[fix-timestamps] Fetched games:', JSON.stringify(games.slice(0, 1)))
+
+    // Update timestamps one by one to avoid constraint issues
+    let fixedCount = 0
+    for (const game of games) {
       const startTime = new Date(game.start_time)
-      return {
-        id: game.id,
-        week: game.week,
-        team1: game.team1,
-        team2: game.team2,
-        start_time: game.start_time,
-        start_timestamp: startTime.getTime(),
-        winner: game.winner,
+      const newTimestamp = startTime.getTime()
+
+      console.log(`[fix-timestamps] Updating game ${game.id}: start_time=${game.start_time} -> timestamp=${newTimestamp}`)
+
+      const { error: updateError } = await supabaseServer
+        .from('games')
+        .update({ start_timestamp: newTimestamp })
+        .eq('id', game.id)
+
+      if (updateError) {
+        console.error(`[fix-timestamps] Error updating game ${game.id}:`, updateError)
+        throw updateError
       }
-    })
-
-    // Batch update all games at once
-    const { error: updateError } = await supabaseServer
-      .from('games')
-      .upsert(updates)
-
-    if (updateError) throw updateError
+      fixedCount++
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: `Fixed timestamps for ${updates.length} games in week ${week}`,
-        gamesCount: updates.length,
+        message: `Fixed timestamps for ${fixedCount} games in week ${week}`,
+        gamesCount: fixedCount,
       },
       { status: 200 }
     )
