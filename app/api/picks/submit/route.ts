@@ -37,13 +37,14 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Get game info to check deadline
-    const { data: game } = await supabaseServer
+    // Get the specific game for the team being picked
+    const { data: games } = await supabaseServer
       .from('games')
       .select('start_timestamp, start_time')
       .eq('week', week)
-      .limit(1)
-      .single()
+      .or(`team1.eq.${team_picked},team2.eq.${team_picked}`)
+
+    const game = games?.[0]
 
     if (game && game.start_timestamp < Date.now()) {
       return NextResponse.json(
