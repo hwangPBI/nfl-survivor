@@ -26,24 +26,32 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Update each game's timestamp based on its start_time
-    let updatedCount = 0
-    for (const game of games) {
+    // Prepare batch updates
+    const updates = games.map((game: any) => {
       const startTime = new Date(game.start_time)
-      const { error: updateError } = await supabaseServer
-        .from('games')
-        .update({ start_timestamp: startTime.getTime() })
-        .eq('id', game.id)
+      return {
+        id: game.id,
+        week: game.week,
+        team1: game.team1,
+        team2: game.team2,
+        start_time: game.start_time,
+        start_timestamp: startTime.getTime(),
+        winner: game.winner,
+      }
+    })
 
-      if (updateError) throw updateError
-      updatedCount++
-    }
+    // Batch update all games at once
+    const { error: updateError } = await supabaseServer
+      .from('games')
+      .upsert(updates)
+
+    if (updateError) throw updateError
 
     return NextResponse.json(
       {
         success: true,
-        message: `Fixed timestamps for ${updatedCount} games in week ${week}`,
-        gamesCount: updatedCount,
+        message: `Fixed timestamps for ${updates.length} games in week ${week}`,
+        gamesCount: updates.length,
       },
       { status: 200 }
     )
