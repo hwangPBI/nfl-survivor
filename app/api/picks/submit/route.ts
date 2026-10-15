@@ -37,6 +37,21 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Check if player already picked this team in a different week
+    const { data: previousPicks } = await supabaseServer
+      .from('picks')
+      .select('week')
+      .eq('player_id', player.id)
+      .eq('team_picked', team_picked)
+      .neq('week', week)
+
+    if (previousPicks && previousPicks.length > 0) {
+      return NextResponse.json(
+        { error: `You already picked ${team_picked} in Week ${previousPicks[0].week}. You can't pick the same team twice.` },
+        { status: 400 }
+      )
+    }
+
     // Get the specific game for the team being picked
     const { data: games } = await supabaseServer
       .from('games')
