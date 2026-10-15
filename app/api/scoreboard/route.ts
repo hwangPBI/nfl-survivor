@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       .select('*, players(id, name, email)')
       .eq('week', currentWeek)
       .eq('result', 'pending')
-      .order('created_at', { ascending: false })
+      .order('updated_at', { ascending: false })
 
     return NextResponse.json(
       {

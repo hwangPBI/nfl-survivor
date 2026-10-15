@@ -112,7 +112,7 @@ export default function Scoreboard() {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-blue-600">{pick.team_picked}</p>
-                  <p className="text-xs text-gray-500">Picked ✓ at {formatPickTime(pick.created_at)}</p>
+                  <p className="text-xs text-gray-500">Picked ✓ at {formatPickTime(pick.updated_at || pick.created_at)}</p>
                 </div>
               </div>
             ))
