@@ -65,7 +65,10 @@ export async function POST(req: NextRequest) {
       // Update existing pick
       const { error: updateError } = await supabaseServer
         .from('picks')
-        .update({ team_picked })
+        .update({
+          team_picked,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', existing.id)
 
       if (updateError) throw updateError
