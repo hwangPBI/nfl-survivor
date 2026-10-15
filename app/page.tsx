@@ -25,6 +25,7 @@ interface PendingPick {
   week: number
   team_picked: string
   created_at: string
+  updated_at: string
   players: {
     id: string
     name: string
