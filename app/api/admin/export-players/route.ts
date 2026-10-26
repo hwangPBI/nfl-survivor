@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
       headers: {
         'Content-Type': 'text/csv;charset=utf-8',
         'Content-Disposition': `attachment; filename="player-list-${new Date().toISOString().split('T')[0]}.csv"`,
+        'Cache-Control': 'no-store, max-age=0',
       },
     })
   } catch (error: any) {
